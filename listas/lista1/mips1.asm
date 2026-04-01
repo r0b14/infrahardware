@@ -3,7 +3,7 @@ a: .word 3
 b: .word 4
 c: .word 3
 
-s: .space 4   # saída
+s: .space 4   # saida
 
 str_not: .asciiz "not"
 str_eq: .asciiz "eq"
@@ -71,7 +71,7 @@ EQCODE:
     la $a0, str_eq
     j COPY
 
-# Caso não seja um triangulo
+# Caso nï¿½o seja um triangulo
 NOTCODE:
     la $a0, str_not
     j COPY
@@ -79,7 +79,7 @@ NOTCODE:
 COPY:
     la $a1, s
 
-# Salva a string em um espaço de memoria
+# Salva a string em um espaï¿½o de memoria
 LOOP:
     lb $t5, 0($a0)
     sb $t5, 0($a1)
