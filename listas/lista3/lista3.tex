@@ -1,0 +1,669 @@
+\documentclass[12pt, a4paper]{article}
+
+% ─────────────────────────────────────────
+%  PACOTES
+% ─────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+% microtype removed for compatibility
+
+% ─────────────────────────────────────────
+%  GEOMETRIA
+% ─────────────────────────────────────────
+\geometry{
+  top=2.5cm, bottom=2.5cm,
+  left=2.5cm, right=2.5cm
+}
+
+% ─────────────────────────────────────────
+%  CORES
+% ─────────────────────────────────────────
+\definecolor{cinufpe}{RGB}{180,0,0}
+\definecolor{azulclaro}{RGB}{220,235,255}
+\definecolor{cinzaclaro}{RGB}{245,245,245}
+\definecolor{verdeclaro}{RGB}{220,245,220}
+\definecolor{amarelobox}{RGB}{255,250,220}
+
+% ─────────────────────────────────────────
+%  TÍTULOS DE SEÇÃO
+% ─────────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{cinufpe}}
+  {Questão \thesection.}
+  {0.5em}{}[\titlerule]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{cinufpe}}
+  {\thesubsection.}
+  {0.5em}{}
+
+% ─────────────────────────────────────────
+%  CABEÇALHO / RODAPÉ
+% ─────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\color{cinufpe}\small Infraestrutura de Hardware -- UFPE/CIn}
+\lhead{\small Lista 3 -- Resolução}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─────────────────────────────────────────
+%  AMBIENTE: CAIXA DE DESTAQUE
+% ─────────────────────────────────────────
+\newmdenv[
+  backgroundcolor=azulclaro,
+  linecolor=cinufpe,
+  linewidth=1pt,
+  roundcorner=4pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=6pt,
+  innerbottommargin=6pt,
+  skipabove=6pt,
+  skipbelow=6pt
+]{caixaazul}
+
+\newmdenv[
+  backgroundcolor=amarelobox,
+  linecolor=orange!80!black,
+  linewidth=1pt,
+  roundcorner=4pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=6pt,
+  innerbottommargin=6pt,
+  skipabove=6pt,
+  skipbelow=6pt
+]{caixaamarela}
+
+\newmdenv[
+  backgroundcolor=verdeclaro,
+  linecolor=green!50!black,
+  linewidth=1pt,
+  roundcorner=4pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=6pt,
+  innerbottommargin=6pt,
+  skipabove=4pt,
+  skipbelow=4pt
+]{caixaverde}
+
+% ─────────────────────────────────────────
+%  DOCUMENTO
+% ─────────────────────────────────────────
+\begin{document}
+
+% ── CAPA ──────────────────────────────────
+\begin{center}
+  {\LARGE\bfseries\color{cinufpe} Lista de Exercícios 3}\\[6pt]
+  {\large Infraestrutura de Hardware -- 2026.1}\\[4pt]
+\end{center}
+\vspace{0.2cm}
+
+% ── AUTORES ───────────────────────────────
+\begin{center}
+  \small
+  \textbf{Grupo 5:}\quad
+  Alberto Marques (ams18)\enspace$\cdot$\enspace
+  Robson Thiago (rtds)\enspace$\cdot$\enspace
+  Vittor Matheus (vmmc3)\enspace$\cdot$\enspace
+  Marcus Silva\enspace$\cdot$\enspace
+  Erbert Gadelha (ebgr)
+\end{center}
+\vspace{0.3cm}
+
+% ══════════════════════════════════════════
+\section{Conceitos de Cache e Hierarquia de Memória}
+% ══════════════════════════════════════════
+
+\subsection{Política de Escrita Write-Back}
+
+A memória principal só é atualizada quando o bloco é substituído da cache. Enquanto o bloco permanece na cache, apenas ela é modificada. Para saber se houve de fato alteração, utiliza-se um dirty bit: se o bit está marcado [1], significa que a cache possui dados mais recentes que a memória principal (cache atualizada); ao ser substituído, o bloco "sujo" é gravado de volta na memória. Isso reduz significativamente o número de acessos à memória principal, mas introduz inconsistência temporária entre cache e memória. Quem geralmente usa essa política são multiprocessadores modernos, pois o ganho de desempenho compensa o custo da complexidade de rastrear o dirty bit.
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} reduz drasticamente a quantidade de acessos à memória principal.\\
+  \textbf{Desvantagem:} inconsistência temporária entre cache e memória;
+  complexidade adicional para rastrear o dirty bit.
+\end{caixaamarela}
+
+\vspace{6pt}
+\begin{center}
+\begin{tikzpicture}[
+  node distance=0.9cm and 2.2cm,
+  box/.style={rectangle, rounded corners=4pt, draw, minimum width=2.6cm,
+              minimum height=0.7cm, font=\small, align=center},
+  decision/.style={diamond, aspect=2.4, draw, font=\small, align=center,
+                   inner sep=2pt},
+  arr/.style={-{Stealth[length=5pt]}, thick}
+]
+  \node[box, fill=azulclaro]   (cpu)     {CPU (escrita)};
+  \node[box, fill=verdeclaro, below=of cpu]   (cache)   {Cache atualiza\\dirty bit = 1};
+  \node[decision, below=of cache]             (evict)   {Evicção?};
+  \node[box, fill=cinzaclaro,  below left=1.1cm and 1.8cm of evict]  (discard) {Descarta\\(sem escrita)};
+  \node[decision, below right=1.1cm and 1.8cm of evict]              (check)   {Dirty\\= 1?};
+  \node[box, fill=amarelobox,  below=of check]                        (mem)     {Memória\\Principal};
+  \node[box, fill=cinzaclaro,  right=1.5cm of mem]                    (drop)    {Descarta\\(sem escrita)};
+
+  \draw[arr] (cpu)   -- (cache);
+  \draw[arr] (cache) -- (evict);
+  \draw[arr] (evict.south west) -- node[left,  font=\scriptsize]{Não} (discard);
+  \draw[arr] (evict.south east) -- node[right, font=\scriptsize]{Sim} (check);
+  \draw[arr] (check) -- node[left,  font=\scriptsize]{Sim} (mem);
+  \draw[arr] (check.east) -- node[above, font=\scriptsize]{Não} (drop);
+\end{tikzpicture}
+\end{center}
+\vspace{4pt}
+
+\subsection{Política de Escrita Write-Through}
+
+toda escrita na cache é propagada simultaneamente à memória principal. Cache e memória ficam sempre em estado consistente. A desvantagem é que a CPU precisa esperar cada acesso à memória principal a cada escrita, penalizando o desempenho. Para mitigar isso, usa-se um write buffer: o dado é colocado no buffer e a CPU pode continuar; o buffer se encarrega de escrever na memória de forma assíncrona.
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} consistência garantida a qualquer instante.\\
+  \textbf{Desvantagem:} penaliza o desempenho -- cada escrita gera um acesso à memória
+  principal sem o write buffer.
+\end{caixaamarela}
+
+\vspace{6pt}
+\begin{center}
+\begin{tikzpicture}[
+  node distance=1.0cm and 1.5cm,
+  box/.style={rectangle, rounded corners=4pt, draw, minimum width=2.4cm,
+              minimum height=0.7cm, font=\small, align=center},
+  arr/.style={-{Stealth[length=5pt]}, thick},
+  arr2/.style={-{Stealth[length=5pt]}, thick, cinufpe}
+]
+  \node[box, fill=azulclaro]  (cpu)    {CPU\\(escrita)};
+  \node[box, fill=verdeclaro, right=2.0cm of cpu] (cache)  {Cache\\(atualiza)};
+  \node[box, fill=amarelobox, right=2.0cm of cache] (mem)   {Memória\\Principal};
+  \node[box, fill=cinzaclaro, below=1.2cm of cache] (buf)   {Write Buffer\\(opcional)};
+
+  \draw[arr] (cpu)   -- node[above, font=\scriptsize]{escrita} (cache);
+  \draw[arr2] (cache) -- node[above, font=\scriptsize]{\textcolor{cinufpe}{simultâneo}} (mem);
+  \draw[arr, dashed] (cache) -- node[right, font=\scriptsize]{ou via buffer} (buf);
+  \draw[arr, dashed] (buf)   -- node[below, font=\scriptsize]{async} (mem);
+\end{tikzpicture}
+\end{center}
+\vspace{4pt}
+
+\subsection{Princípio da Localidade Temporal}
+
+um programa tende a referenciar os mesmos endereços de memória várias vezes em um curto intervalo de tempo. Itens acessados recentemente têm alta probabilidade de serem acessados novamente em breve.
+
+\begin{caixaverde}
+  \textbf{Exemplo:} instruções de um laço \texttt{for} são buscadas a cada iteração.
+  Manter essas instruções na cache elimina acessos repetidos à memória principal.
+\end{caixaverde}
+
+\subsection{Princípio da Localidade Espacial}
+
+um processo tende a acessar endereços de memória que estão próximos ao endereço acessado mais recentemente. Isso justifica trazer blocos inteiros de memória para a cache, não apenas a palavra requisitada.
+
+
+\begin{caixaverde}
+  \textbf{Exemplo:} ao acessar \texttt{A[0]}, é muito provável que
+  \texttt{A[1]}, \texttt{A[2]}, \ldots sejam acessados logo em seguida - Parecido com que o registrador PC+4 geralmente faz.
+\end{caixaverde}
+
+\subsection{Hierarquia de Memória}
+
+A hierarquia de memória organiza os diferentes tipos de memória em \textbf{níveis},
+explorando os princípios de localidade para oferecer a ilusão de uma memória grande,
+rápida e barata simultaneamente.
+
+\vspace{4pt}
+\begin{tabular}{lllll}
+  \toprule
+  \textbf{Nível} & \textbf{Exemplo} & \textbf{Latência} & \textbf{Tamanho} & \textbf{Custo}\\
+  \midrule
+  0 & Registradores   & $\sim$0,5 ciclos  & centenas de bytes & máximo \\
+  1 & Cache L1 (SRAM) & $\sim$1 ciclo     & dezenas de KB     & muito alto \\
+  2 & Cache L2 (SRAM) & $\sim$10 ciclos   & megabytes         & alto \\
+  3 & DRAM            & $\sim$100 ciclos  & gigabytes         & médio \\
+  4 & Disco           & $\sim$10.000 ciclos & terabytes       & baixo \\
+  \bottomrule
+\end{tabular}
+
+% ══════════════════════════════════════════
+\section{Cálculo de Latência do Disco}
+% ══════════════════════════════════════════
+
+\textbf{Dados fornecidos:}
+\begin{itemize}[noitemsep]
+  \item Velocidade de rotação: $12.000\ \mathrm{rpm}$
+  \item Tamanho do setor: $4\ \mathrm{KB}$
+  \item Taxa de transferência: $80\ \mathrm{MB/s}$
+  \item Tempo médio de seek: $1\ \mathrm{ms}$
+  \item Overhead do controlador: $500\ \mu\mathrm{s} = 0{,}5\ \mathrm{ms}$
+\end{itemize}
+
+\textbf{Fórmula geral:}
+
+\[
+  \text{Disk Latency} = \text{Seek Time} + \text{Rotation Time}
+                      + \text{Transfer Time} + \text{Controller Overhead}
+\]
+
+\vspace{6pt}
+\textbf{Passo 1 -- Seek Time:}
+\[
+  \text{Seek Time} = 1\ \mathrm{ms}
+\]
+
+\textbf{Passo 2 -- Rotation Time} (latência rotacional média = metade de uma rotação):
+\[
+  \text{Rotation Time}
+    = \frac{0{,}5\ \text{rotação}}{12.000\ \text{rot/min}}
+    = \frac{0{,}5}{\dfrac{12.000}{60}\ \text{rot/s}}
+    = \frac{0{,}5}{200\ \text{rot/s}}
+    = 0{,}0025\ \mathrm{s}
+    = 2{,}5\ \mathrm{ms}
+\]
+
+\textbf{Passo 3 -- Transfer Time:}
+\[
+  \text{Transfer Time}
+    = \frac{4\ \mathrm{KB}}{80\ \mathrm{MB/s}}
+    = \frac{4 \times 10^{3}\ \mathrm{B}}{80 \times 10^{6}\ \mathrm{B/s}}
+    = 5 \times 10^{-5}\ \mathrm{s}
+    = 0{,}05\ \mathrm{ms}
+\]
+
+\textbf{Passo 4 -- Resultado:}
+\[
+  \text{Disk Latency}
+    = 1\ \mathrm{ms} + 2{,}5\ \mathrm{ms} + 0{,}05\ \mathrm{ms} + 0{,}5\ \mathrm{ms}
+\]
+
+\begin{caixaazul}
+  \[
+    \boxed{\text{Disk Latency} = 4{,}05\ \mathrm{ms}}
+  \]
+\end{caixaazul}
+
+% ══════════════════════════════════════════
+\section{Métodos de Comunicação E/S -- Polling e Interrupção}
+% ══════════════════════════════════════════
+
+\subsection{Polling}
+
+O processador \textbf{verifica periodicamente} o registrador de status do dispositivo
+para determinar se ele está pronto ou terminou uma operação.
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} simplicidade de implementação -- não exige hardware adicional.\\
+  \textbf{Desvantagem:} a CPU fica presa em \emph{busy-waiting}, desperdiçando ciclos
+  de processamento enquanto o dispositivo não está pronto. Para dispositivos lentos,
+  o custo é proibitivo.
+\end{caixaamarela}
+
+\subsection{Interrupção}
+
+O dispositivo \textbf{sinaliza ativamente} o processador quando está pronto ou quando
+termina uma operação. A CPU executa outras tarefas livremente; ao ser interrompida,
+salva o contexto e executa a Rotina de Serviço de Interrupção (ISR).
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} melhor utilização da CPU -- o processador só é suspenso quando há
+  efetivamente algo a fazer.\\
+  \textbf{Desvantagem:} exige hardware especial para detectar, identificar e tratar
+  interrupções, além do custo de salvar e restaurar o contexto.
+\end{caixaamarela}
+
+\begin{caixaverde}
+  \textbf{Nota:} em sistemas modernos, ambos coexistem. Polling é preferido para
+  dispositivos de alta frequência (onde o overhead de contexto não compensa),
+  enquanto interrupções são usadas para dispositivos lentos (disco, rede).
+\end{caixaverde}
+
+% ══════════════════════════════════════════
+\section{Tipos de RAID}
+% ══════════════════════════════════════════
+
+\subsection{RAID 0 -- Striping sem Redundância}
+
+Distribui os dados em blocos entre $N$ discos de forma intercalada.
+\textbf{Não há redundância}: a falha de um único disco implica perda total dos dados.
+A capacidade total equivale à soma de todos os discos.
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} máximo desempenho de leitura e escrita (I/O paralelo).\\
+  \textbf{Desvantagem:} zero tolerância a falhas.
+\end{caixaamarela}
+
+\subsection{RAID 1 -- Espelhamento (Mirroring)}
+
+Cada disco possui uma \textbf{cópia exata} em outro disco. Tolera a falha de um
+disco sem perda de dados. A capacidade útil é 50\% do total.
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} alta confiabilidade; leitura pode ser realizada de qualquer cópia.\\
+  \textbf{Desvantagem:} custo elevado -- metade da capacidade é redundante.
+\end{caixaamarela}
+
+\subsection{RAID 10 (1+0) -- Espelhamento + Striping}
+
+Combina RAID 1 e RAID 0: pares de discos espelhados são organizados em \emph{stripe}.
+Requer no mínimo 4 discos. Tolera a falha de um disco por par espelhado.
+
+\begin{caixaamarela}
+  \textbf{Vantagem:} alto desempenho e boa tolerância a falhas.\\
+  \textbf{Desvantagem:} custo elevado (50\% de overhead de capacidade).
+\end{caixaamarela}
+
+\subsection{RAID 3 -- Paridade no Nível de Byte}
+
+Usa $N+1$ discos. Os dados são distribuídos em \textbf{nível de byte} entre $N$ discos;
+um disco dedicado armazena a paridade. Toda operação acessa todos os discos
+simultaneamente.
+
+\begin{caixaamarela}
+  \textbf{Problema:} o disco de paridade é gargalo em escritas -- qualquer escrita
+  exige atualizar todos os discos e o de paridade.
+\end{caixaamarela}
+
+\subsection{RAID 4 -- Paridade no Nível de Bloco}
+
+Usa $N+1$ discos. Distribuição em \textbf{nível de bloco}; um disco dedicado de
+paridade. Leituras são independentes entre discos.
+
+\begin{caixaamarela}
+  \textbf{Problema:} em escritas simultâneas, o disco de paridade ainda é gargalo
+  (toda escrita precisa atualizá-lo).
+\end{caixaamarela}
+
+\subsection{RAID 5 -- Paridade Distribuída}
+
+Semelhante ao RAID 4, mas os \textbf{blocos de paridade são distribuídos} por todos os
+discos de forma rotativa. Isso elimina o gargalo do disco dedicado de paridade,
+permitindo escritas simultâneas. É o RAID mais utilizado em servidores.
+
+\begin{caixaverde}
+  \textbf{Resumo comparativo:}
+\end{caixaverde}
+
+\vspace{4pt}
+\begin{tabular}{llllp{4.5cm}}
+  \toprule
+  \textbf{RAID} & \textbf{Redundância} & \textbf{Discos mín.} & \textbf{Falhas} & \textbf{Destaque}\\
+  \midrule
+  0  & Nenhuma                  & 2 & 0             & Máx. desempenho\\
+  1  & Espelho                  & 2 & 1 por par     & Simplicidade\\
+  10 & Espelho + Stripe         & 4 & 1 por par     & Desempenho + tolerância\\
+  3  & Paridade dedicada (byte) & 3 & 1             & Leitura sequencial rápida\\
+  4  & Paridade dedicada (bloco)& 3 & 1             & Leitura paralela\\
+  5  & Paridade distribuída     & 3 & 1             & Melhor custo-benefício\\
+  \bottomrule
+\end{tabular}
+
+% ══════════════════════════════════════════
+\section{Exercício de Cache -- Mapeamento}
+% ══════════════════════════════════════════
+
+\textbf{Parâmetros da cache:}
+\begin{itemize}[noitemsep]
+  \item Cache: $2\ \mathrm{KB} = 2048\ \mathrm{bytes}$
+  \item Endereços: 32 bits
+  \item Bloco: 16 bytes $\Rightarrow$ offset $= \log_2 16 = 4$ bits
+  \item Número de blocos na cache: $\dfrac{2048}{16} = 128$ blocos
+\end{itemize}
+
+\textbf{Endereço de bloco de cada acesso:}
+$\text{Endereço do bloco} = \left\lfloor \dfrac{\text{Endereço do byte}}{16} \right\rfloor$
+
+\vspace{6pt}
+\begin{tabular}{cc}
+  \toprule
+  \textbf{End. Byte} & \textbf{End. Bloco}\\
+  \midrule
+  0    & 0   \\
+  15   & 0   \\
+  16   & 1   \\
+  2048 & 128 \\
+  5    & 0   \\
+  2049 & 128 \\
+  2064 & 129 \\
+  32   & 2   \\
+  20   & 1   \\
+  2    & 0   \\
+  60   & 3   \\
+  2068 & 129 \\
+  62   & 3   \\
+  65   & 4   \\
+  \bottomrule
+\end{tabular}
+
+% ──────────────────────────────────────────
+\subsection{Mapeamento Direto}
+% ──────────────────────────────────────────
+
+$\text{Bloco na cache} = \text{Endereço do bloco}\ \bmod\ 128$
+
+Bits: 32 = 4 (offset) + 7 (índice, $\log_2 128 = 7$) + 21 (tag)
+
+\vspace{4pt}
+\begin{tabular}{ccccc}
+  \toprule
+  \textbf{End. Byte} & \textbf{End. Bloco} & \textbf{Índice (mod 128)} & \textbf{Tag} & \textbf{Hit/Miss}\\
+  \midrule
+  0    & 0   & 0 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  15   & 0   & 0 & 0 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  16   & 1   & 1 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  2048 & 128 & 0 & 1 & \textcolor{red}{\textbf{MISS}} \\
+  5    & 0   & 0 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  2049 & 128 & 0 & 1 & \textcolor{red}{\textbf{MISS}} \\
+  2064 & 129 & 1 & 1 & \textcolor{red}{\textbf{MISS}} \\
+  32   & 2   & 2 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  20   & 1   & 1 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  2    & 0   & 0 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  60   & 3   & 3 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  2068 & 129 & 1 & 1 & \textcolor{red}{\textbf{MISS}} \\
+  62   & 3   & 3 & 0 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  65   & 4   & 4 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  \bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\textbf{Hits: 2} \quad \textbf{Misses: 12} \quad \textbf{Total: 14}
+
+\begin{caixaazul}
+  \[
+    \text{Miss Rate} = \frac{12}{14} \approx 85{,}7\%
+  \]
+\end{caixaazul}
+
+\begin{caixaamarela}
+  \textbf{Thrashing:} os blocos 0 e 128 mapeiam para o mesmo índice (0) e se
+  expulsam mutuamente -- o mesmo ocorre com os blocos 1 e 129 no índice 1.
+  Isso é o \emph{thrashing} clássico do mapeamento direto.
+\end{caixaamarela}
+
+% ──────────────────────────────────────────
+\subsection{Associativa de Grau 2}
+% ──────────────────────────────────────────
+
+128 blocos / 2 vias $= 64$ conjuntos.\\
+$\text{Conjunto} = \text{Endereço do bloco}\ \bmod\ 64$
+
+Bits: 32 = 4 (offset) + 6 (índice, $\log_2 64 = 6$) + 22 (tag). Substituição: LRU.
+
+\vspace{4pt}
+\begin{tabular}{ccccp{4cm}}
+  \toprule
+  \textbf{End. Byte} & \textbf{End. Bloco} & \textbf{Conjunto} & \textbf{H/M} & \textbf{Estado do conjunto (via 0 | via 1)}\\
+  \midrule
+  0    & 0   & 0 & \textcolor{red}{\textbf{M}} & B0 $|$ ---  \\
+  15   & 0   & 0 & \textcolor{green!60!black}{\textbf{H}} & B0 $|$ ---  \\
+  16   & 1   & 1 & \textcolor{red}{\textbf{M}} & B1 $|$ ---  \\
+  2048 & 128 & 0 & \textcolor{red}{\textbf{M}} & B0 $|$ B128 \\
+  5    & 0   & 0 & \textcolor{green!60!black}{\textbf{H}} & B0 $|$ B128 \\
+  2049 & 128 & 0 & \textcolor{green!60!black}{\textbf{H}} & B0 $|$ B128 \\
+  2064 & 129 & 1 & \textcolor{red}{\textbf{M}} & B1 $|$ B129 \\
+  32   & 2   & 2 & \textcolor{red}{\textbf{M}} & B2 $|$ ---  \\
+  20   & 1   & 1 & \textcolor{green!60!black}{\textbf{H}} & B1 $|$ B129 \\
+  2    & 0   & 0 & \textcolor{green!60!black}{\textbf{H}} & B0 $|$ B128 \\
+  60   & 3   & 3 & \textcolor{red}{\textbf{M}} & B3 $|$ ---  \\
+  2068 & 129 & 1 & \textcolor{green!60!black}{\textbf{H}} & B1 $|$ B129 \\
+  62   & 3   & 3 & \textcolor{green!60!black}{\textbf{H}} & B3 $|$ ---  \\
+  65   & 4   & 4 & \textcolor{red}{\textbf{M}} & B4 $|$ ---  \\
+  \bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\textbf{Hits: 7} \quad \textbf{Misses: 7} \quad \textbf{Total: 14}
+
+\begin{caixaazul}
+  \[
+    \text{Miss Rate} = \frac{7}{14} = 50{,}0\%
+  \]
+\end{caixaazul}
+
+% ──────────────────────────────────────────
+\subsection{Associativa de Grau 4}
+% ──────────────────────────────────────────
+
+128 blocos / 4 vias $= 32$ conjuntos.\\
+$\text{Conjunto} = \text{Endereço do bloco}\ \bmod\ 32$
+
+Bits: 32 = 4 (offset) + 5 (índice, $\log_2 32 = 5$) + 23 (tag). Substituição: LRU.
+
+\vspace{4pt}
+\begin{tabular}{cccc}
+  \toprule
+  \textbf{End. Byte} & \textbf{End. Bloco} & \textbf{Conjunto} & \textbf{Hit/Miss}\\
+  \midrule
+  0    & 0   & 0 & \textcolor{red}{\textbf{MISS}} \\
+  15   & 0   & 0 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  16   & 1   & 1 & \textcolor{red}{\textbf{MISS}} \\
+  2048 & 128 & 0 & \textcolor{red}{\textbf{MISS}} \\
+  5    & 0   & 0 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  2049 & 128 & 0 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  2064 & 129 & 1 & \textcolor{red}{\textbf{MISS}} \\
+  32   & 2   & 2 & \textcolor{red}{\textbf{MISS}} \\
+  20   & 1   & 1 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  2    & 0   & 0 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  60   & 3   & 3 & \textcolor{red}{\textbf{MISS}} \\
+  2068 & 129 & 1 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  62   & 3   & 3 & \textcolor{green!60!black}{\textbf{HIT}}  \\
+  65   & 4   & 4 & \textcolor{red}{\textbf{MISS}} \\
+  \bottomrule
+\end{tabular}
+
+\vspace{6pt}
+\textbf{Hits: 7} \quad \textbf{Misses: 7} \quad \textbf{Total: 14}
+
+\begin{caixaazul}
+  \[
+    \text{Miss Rate} = \frac{7}{14} = 50{,}0\%
+  \]
+\end{caixaazul}
+
+\begin{caixaverde}
+  \textbf{Comparação das três configurações:}
+
+  \vspace{4pt}
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Configuração} & \textbf{Hits} & \textbf{Misses} & \textbf{Miss Rate}\\
+    \midrule
+    Mapeamento Direto   & 2 & 12 & 85,7\% \\
+    Associativa Grau 2  & 7 & 7  & 50,0\% \\
+    Associativa Grau 4  & 7 & 7  & 50,0\% \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{4pt}
+  Nesta sequência, o ganho de grau 2 para grau 4 é nulo porque os conflitos
+  críticos (blocos 0 vs.\ 128 e 1 vs.\ 129) já são resolvidos com 2 vias.
+  O mapeamento direto sofre thrashing severo por não ter flexibilidade de alocação.
+\end{caixaverde}
+
+% ══════════════════════════════════════════
+\section{Memória Virtual -- Tabela de Páginas}
+% ══════════════════════════════════════════
+
+\textbf{Dados:}
+\begin{itemize}[noitemsep]
+  \item Endereço virtual: 32 bits
+  \item Tamanho de página: $4\ \mathrm{KB} = 2^{12}$ bytes $\Rightarrow$ offset $= 12$ bits
+  \item Entrada da tabela de páginas: 4 bytes $= 32$ bits
+  \item Bits de controle por entrada: 8 bits
+\end{itemize}
+
+% ──────────────────────────────────────────
+\subsection{Maior Tamanho de Memória Física Suportado}
+% ──────────────────────────────────────────
+
+Cada entrada tem 32 bits. Com 8 bits reservados para controle, restam para o
+\textbf{número de frame físico (PFN)}:
+
+\[
+  \text{Bits para PFN} = 32 - 8 = 24\ \text{bits}
+\]
+
+O número máximo de frames físicos endereçáveis:
+
+\[
+  \text{Número de frames} = 2^{24}
+\]
+
+Como cada frame tem $2^{12}$ bytes (tamanho de página):
+
+\[
+  \text{Memória Física Máxima} = 2^{24} \times 2^{12}\ \text{bytes} = 2^{36}\ \text{bytes}
+\]
+
+\begin{caixaazul}
+  \[
+    \boxed{\text{Memória Física Máxima} = 2^{36}\ \text{bytes} = 64\ \mathrm{GB}}
+  \]
+\end{caixaazul}
+
+% ──────────────────────────────────────────
+\subsection{Tamanho da Tabela de Páginas em Bits}
+% ──────────────────────────────────────────
+
+Com endereços virtuais de 32 bits e páginas de $2^{12}$ bytes, o número de entradas
+na tabela é:
+
+\[
+  \text{Número de entradas} = \frac{2^{32}}{2^{12}} = 2^{20}\ \text{entradas}
+\]
+
+Cada entrada ocupa $4\ \text{bytes} = 32\ \text{bits}$. Portanto:
+
+\[
+  \text{Tamanho da tabela} = 2^{20} \times 32\ \text{bits}
+\]
+
+\begin{caixaazul}
+  \[
+    \boxed{\text{Tamanho} = 2^{20} \times 32 = 33{.}554{.}432\ \text{bits}
+           = 32\ \text{Mbit} = 4\ \text{MB}}
+  \]
+\end{caixaazul}
+
+\begin{caixaamarela}
+  \textbf{Reflexão:} uma tabela de 4 MB por processo explica por que sistemas
+  modernos utilizam \emph{tabelas de páginas multi-nível}: alocar 4 MB
+  contíguos na memória para cada processo em execução seria impraticável.
+  A TLB (\emph{Translation Look-aside Buffer}) também mitiga o custo de acesso
+  à tabela, armazenando as entradas mais recentemente usadas.
+\end{caixaamarela}
+
+\end{document}
