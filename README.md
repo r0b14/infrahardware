@@ -167,6 +167,13 @@ O formato `J` é utilizado para transferir o fluxo de execução para outro pont
 ## 🔗 Links Úteis
 
 - [Site da Disciplina (Material de Aula)](https://sites.google.com/a/cin.ufpe.br/if674cc/material-de-aula?authuser=0)
+- [A Bíblia (Patterson & Hennessy)](https://drive.google.com/file/d/1Ih132XcT3e076MO0fj3txaEkNOlFWCAW/view)
+- [Provas Antigas](https://drive.google.com/drive/folders/1dZeca30XHp0qKC2CTOskhHRghDw-z_kI)
+- [Questão Recorrente Prova 1](https://drive.google.com/file/d/16-7lfjoTGw4i559qx81ESS-sLzir71uV/view)
+- [Questões Respondidas (Prova 1 e 2 misturadas)](https://drive.google.com/drive/u/0/folders/1KbuN1yF-YD1pwNBrS8FwI2tRSljPrTl3)
+- [Relatórios, Projetos e Provas Extras](https://drive.google.com/drive/folders/1k_fskKo_1S6oaks1RWaLlgcihVm1ohRj)
+- [Pasta Dropbox (Relatórios e Projetos)](https://www.dropbox.com/scl/fo/rv17i32p23g8cpldydmz0/ACyJgNRTaTkCfRDAomGRnS0/3%C2%BA%20Per%C3%ADodo/Infraestrutura%20de%20Hardware?rlkey=mfji3vld4c4mh30qs0nwnd3gl&e=1&dl=0)
+- [Compilado de Links](https://docs.google.com/document/d/1iIdWJAyOIquXBDMsABHLJu7opGv5jPcYgsMq8SUIGjY/edit?tab=t.0)
 
 ---
 
