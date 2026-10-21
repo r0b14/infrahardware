@@ -1,0 +1,38 @@
+\section{Catálogo das 23 instruções}\label{ap:catalogo}
+
+As codificações seguem as Tabelas 1--3 da especificação 2026.2. Em todas as instruções R, \texttt{opcode=0x00}. \texttt{push} e \texttt{pop} são extensões desta disciplina e podem não ser aceitas por montadores MIPS genéricos.
+
+\small
+\begin{longtable}{@{}p{1.42cm}p{3.45cm}p{2.25cm}p{6.93cm}@{}}
+\caption{Instruções exigidas e efeito arquitetural principal.}\label{tab:catalogo}\\
+\toprule Formato & Instrução & Código & Efeito principal \\\midrule
+\endfirsthead
+\toprule Formato & Instrução & Código & Efeito principal \\\midrule
+\endhead
+\bottomrule
+\endfoot
+R & \texttt{add rd,rs,rt} & funct 0x20 & Soma com sinal, destino rd e controle de overflow. \\
+R & \texttt{and rd,rs,rt} & funct 0x24 & AND bit a bit em rd. \\
+R & \texttt{div rs,rt} & funct 0x1A & Quociente em LO, resto em HI, erro de divisor zero. \\
+R & \texttt{mult rs,rt} & funct 0x18 & Produto com sinal de 64 bits em HI/LO. \\
+R & \texttt{jr rs} & funct 0x08 & PC recebe R[rs]. \\
+R & \texttt{mfhi rd} & funct 0x10 & rd recebe HI. \\
+R & \texttt{mflo rd} & funct 0x12 & rd recebe LO. \\
+R & \texttt{sll rd,rt,shamt} & funct 0x00 & Deslocamento lógico à esquerda. \\
+R & \texttt{slt rd,rs,rt} & funct 0x2A & Comparação com sinal; rd recebe 0 ou 1. \\
+R & \texttt{sra rd,rt,shamt} & funct 0x03 & Deslocamento aritmético à direita. \\
+R & \texttt{sub rd,rs,rt} & funct 0x22 & Subtração com sinal e controle de overflow. \\
+R & \texttt{push rs} & funct 0x05 & R29 diminui quatro; R[rs] antigo é gravado no novo topo. \\
+R & \texttt{pop rd} & funct 0x06 & rd recebe a palavra do topo antigo; R29 aumenta quatro. \\
+I & \texttt{addi rt,rs,imm} & opcode 0x08 & Soma com imediato estendido com sinal. \\
+I & \texttt{beq rs,rt,off} & opcode 0x04 & Desvio relativo se R[rs]=R[rt]. \\
+I & \texttt{bne rs,rt,off} & opcode 0x05 & Desvio relativo se R[rs]$\ne$R[rt]. \\
+I & \texttt{lb rt,off(rs)} & opcode 0x20 & Leitura de byte e extensão de sinal. \\
+I & \texttt{lui rt,imm} & opcode 0x0F & Imediato nos 16 bits altos. \\
+I & \texttt{lw rt,off(rs)} & opcode 0x23 & Leitura de palavra em endereço efetivo. \\
+I & \texttt{sb rt,off(rs)} & opcode 0x28 & Escrita de byte com preservação dos vizinhos. \\
+I & \texttt{sw rt,off(rs)} & opcode 0x2B & Escrita da palavra de R[rt] em endereço efetivo. \\
+J & \texttt{j target} & opcode 0x02 & Salto incondicional para alvo formado. \\
+J & \texttt{jal target} & opcode 0x03 & Salto com gravação de endereço de retorno em R31. \\
+\end{longtable}
+\normalsize

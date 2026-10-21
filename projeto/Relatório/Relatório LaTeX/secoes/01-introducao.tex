@@ -1,0 +1,21 @@
+\section{Introdução}\label{sec:introducao}
+
+Este relatório descreve a arquitetura e o controle de um processador multiciclo de 32 bits para as 23 instruções definidas na especificação do projeto de IF674 de 2026.2~\cite{especificacao}. O objetivo é associar o comportamento de cada instrução aos blocos do caminho de dados, aos sinais da unidade de controle (UC) e à sequência temporal de estados. A versão 2026.2 substitui \texttt{xchg} e \texttt{sram} por \texttt{push} e \texttt{pop}; por isso, o tratamento da pilha e do registrador R29 recebe atenção especial nas Seções~\ref{sec:pilha} e~\ref{sec:estados-pilha}.
+
+Por decisão de Robson Thiago Duarte, as instruções são apresentadas em agrupamentos definidos pela semelhança de seus caminhos de dados e etapas de controle. Essa organização evidencia os recursos compartilhados da arquitetura multiciclo; o catálogo individual das 23 instruções permanece no Apêndice~\ref{ap:catalogo}, e o roteiro de simulação de cada uma está na Seção~\ref{sec:simulacoes}.
+
+O projeto foi organizado a partir da documentação das partes 1, 2 e 3 da equipe~\cite{docpt1,docpt2,docpt3}, do quadro no FigJam~\cite{figma} e dos conteúdos de instruções, processadores monociclo e multiciclo e desempenho trabalhados na disciplina~\cite{aulas}. A arquitetura multiciclo reutiliza unidades em ciclos diferentes e preserva valores intermediários em IR, A, B, ALUOut e MDR. A UC determina quais fontes, operações e escritas ficam ativas em cada estado. Essa distinção entre caminho de dados e controle orienta tanto os fluxos deste texto como os espaços preparados para as formas de onda.
+
+\subsection{Escopo e critérios do projeto}\label{subsec:escopo}
+
+A CPU possui 32 registradores gerais de 32 bits e uma memória unificada de 256 bytes endereçada por byte. O conjunto tem 13 instruções R, oito I e duas J, catalogadas no Apêndice~\ref{ap:catalogo}. A memória lê de forma síncrona, escreve em um ciclo e armazena bytes em ordem \emph{little-endian}. O registrador R29 atua como ponteiro da pilha (SP), com valor inicial especificado em 227. A UC também deve tratar opcode inexistente, overflow e divisão por zero, preservando em EPC o endereço da instrução causadora~\cite{especificacao}.
+
+O Capítulo 3 da especificação exige capa, índice, introdução, unidade de processamento, descrição das entidades, descrição dos estados de controle, conjunto de simulações e conclusão. A estrutura deste relatório segue essa ordem. As exportações do circuito e do mapa de estados estão nas Figuras~\ref{fig:circuito-figma} e~\ref{fig:mapa-figma}; os fluxos menores são desenhados diretamente em LaTeX para permanecerem nítidos e fáceis de atualizar.
+
+\subsection{Situação da implementação e da evidência}\label{subsec:situacao}
+
+Os documentos disponíveis registram o desenho, as decisões de caminho de dados e os estados propostos de \texttt{push}/\texttt{pop}. A parte 3 acrescenta seis módulos VHDL fornecidos, o arquivo inicial de memória e onze programas Assembly de apoio~\cite{docpt3}. Esses artefatos permitem conferir interfaces e preparar estímulos; a integração da CPU e da UC e as capturas Quartus das 23 instruções ainda precisam ser documentadas neste relatório. A Seção~\ref{sec:simulacoes} contém um roteiro individual para cada instrução e para as entidades implementadas; os campos de resultado observado permanecem abertos para receber as evidências. As pendências técnicas de integração e orientação da disciplina aparecem no Apêndice~\ref{ap:pendencias}.
+
+\subsection{Relação com as aulas}\label{subsec:aulas}
+
+As aulas sobre representação de instruções fundamentam a decodificação dos campos \texttt{opcode}, \texttt{rs}, \texttt{rt}, \texttt{rd}, \texttt{shamt}, \texttt{funct} e imediato. A implementação monociclo ajuda a identificar o efeito completo de uma instrução; a implementação multiciclo reparte esse efeito em etapas que compartilham ALU, memória e banco de registradores. A aula de desempenho mostra que a economia de hardware deve ser analisada junto com número de ciclos, período do clock e mistura de instruções. Portanto, a contagem de caixas em um fluxo não basta, sozinha, para concluir qual arquitetura é mais rápida~\cite{aulas}.

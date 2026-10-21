@@ -1,0 +1,61 @@
+\babel@toc {brazilian}{}\relax 
+\contentsline {section}{\numberline {1}Introdução}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Escopo e critérios do projeto}{1}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Situação da implementação e da evidência}{1}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Relação com as aulas}{1}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Unidade de processamento}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Visão geral do caminho de dados}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Formatos, busca e acesso à memória}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Grupos de reaproveitamento}{5}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Pilha e extensão da arquitetura}{5}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Demais operações e cuidados de integração}{6}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Descrição das entidades}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Componentes recebidos na parte 3}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Registradores e banco}{7}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}ALU, deslocador e unidades especiais}{7}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Memória e tratamento de bytes}{7}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Unidade de controle e seletores}{7}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Descrição dos estados do controle}{7}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Como ler o mapa de estados}{7}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Estados compartilhados}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Sequência de \texttt {push} e \texttt {pop}}{8}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Exemplo de execução e bytes}{9}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Exceções e retorno}{9}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Conjunto de simulações}{11}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Programas de apoio recebidos na parte 3}{11}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Convenção de preenchimento}{11}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Casos prioritários da pilha}{12}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Instruções do formato R}{12}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}add}{12}{subsection.5.5}%
+\contentsline {subsection}{\numberline {5.6}and}{12}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}div}{13}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}mult}{13}{subsection.5.8}%
+\contentsline {subsection}{\numberline {5.9}jr}{14}{subsection.5.9}%
+\contentsline {subsection}{\numberline {5.10}mfhi}{14}{subsection.5.10}%
+\contentsline {subsection}{\numberline {5.11}mflo}{14}{subsection.5.11}%
+\contentsline {subsection}{\numberline {5.12}sll}{15}{subsection.5.12}%
+\contentsline {subsection}{\numberline {5.13}slt}{15}{subsection.5.13}%
+\contentsline {subsection}{\numberline {5.14}sra}{16}{subsection.5.14}%
+\contentsline {subsection}{\numberline {5.15}sub}{16}{subsection.5.15}%
+\contentsline {subsection}{\numberline {5.16}push}{16}{subsection.5.16}%
+\contentsline {subsection}{\numberline {5.17}pop}{17}{subsection.5.17}%
+\contentsline {subsection}{\numberline {5.18}Instruções do formato I}{17}{subsection.5.18}%
+\contentsline {subsection}{\numberline {5.19}addi}{17}{subsection.5.19}%
+\contentsline {subsection}{\numberline {5.20}beq}{18}{subsection.5.20}%
+\contentsline {subsection}{\numberline {5.21}bne}{18}{subsection.5.21}%
+\contentsline {subsection}{\numberline {5.22}lb}{19}{subsection.5.22}%
+\contentsline {subsection}{\numberline {5.23}lui}{19}{subsection.5.23}%
+\contentsline {subsection}{\numberline {5.24}lw}{19}{subsection.5.24}%
+\contentsline {subsection}{\numberline {5.25}sb}{20}{subsection.5.25}%
+\contentsline {subsection}{\numberline {5.26}sw}{20}{subsection.5.26}%
+\contentsline {subsection}{\numberline {5.27}Instruções do formato J}{21}{subsection.5.27}%
+\contentsline {subsection}{\numberline {5.28}j}{21}{subsection.5.28}%
+\contentsline {subsection}{\numberline {5.29}jal}{21}{subsection.5.29}%
+\contentsline {subsection}{\numberline {5.30}Simulações isoladas das entidades implementadas}{21}{subsection.5.30}%
+\contentsline {subsubsection}{\numberline {5.30.1}Unidade de controle}{22}{subsubsection.5.30.1}%
+\contentsline {subsubsection}{\numberline {5.30.2}Multiplicador}{22}{subsubsection.5.30.2}%
+\contentsline {subsubsection}{\numberline {5.30.3}Divisor}{22}{subsubsection.5.30.3}%
+\contentsline {subsubsection}{\numberline {5.30.4}Outras entidades próprias}{22}{subsubsection.5.30.4}%
+\contentsline {section}{\numberline {6}Conclusão}{22}{section.6}%
+\contentsline {section}{\numberline {A}Catálogo das 23 instruções}{23}{appendix.A}%
+\contentsline {section}{\numberline {B}Decisões a confirmar antes da entrega}{24}{appendix.B}%

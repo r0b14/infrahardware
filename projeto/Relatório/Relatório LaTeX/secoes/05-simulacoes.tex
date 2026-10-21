@@ -1,0 +1,94 @@
+\section{Conjunto de simulações}\label{sec:simulacoes}
+
+Carlos Henrique Gonçalves dos Santos (CC, \texttt{chgs3}) foi responsável pela parte de simulação do projeto. Esta seção está preparada para incorporar as formas de onda e a análise da implementação ao texto. A especificação exige ao menos uma simulação de cada uma das 23 instruções, com descrição dos sinais, imagem Quartus e explicação de todos os passos. Em cada captura devem aparecer clock, reset, estado da UC, PC, EPC, MDR, IR, R29, R31 e os registradores envolvidos, além dos sinais que permitem compreender a instrução~\cite{especificacao}. Os campos \emph{resultado observado} permanecem abertos até a inserção das evidências correspondentes.
+
+\subsection{Programas de apoio recebidos na parte 3}\label{subsec:programas-pt3}
+
+A pasta \texttt{mips - alunos - 2026.2} fornece os programas da Tabela~\ref{tab:asm-pt3}. Eles são pontos de partida para gerar o conteúdo de \texttt{instrucoes.mif} e observar sequências reais da CPU; sua presença não equivale a resultados de simulação. O \texttt{LEIA-ME.txt} da parte 3 indica um conversor MIPS--MIF como apoio, mas cada imagem de memória deve ser conferida quanto às codificações específicas do projeto, sobretudo \texttt{push} e \texttt{pop}~\cite{docpt3}.
+
+\begin{table}[H]\centering\small
+\caption{Programas Assembly fornecidos e finalidade principal.}\label{tab:asm-pt3}
+\begin{tabularx}{\linewidth}{@{}p{4cm}X@{}}\toprule
+Arquivo & Situações que pode exercitar \\\midrule
+\texttt{ula.asm}, \texttt{addi\_overflow.asm} & Aritmética, lógica, comparação e overflow de \texttt{addi}. \\
+\texttt{branch.asm}, \texttt{jumps\_break.asm} & \texttt{beq}/\texttt{bne} tomados e não tomados; \texttt{j}, \texttt{jal} e \texttt{jr}. \\
+\texttt{loads.asm}, \texttt{stores.asm} & \texttt{lw}/\texttt{lb} e \texttt{sw}/\texttt{sb} com dados em memória. \\
+\texttt{shifts.asm} & \texttt{sll} e \texttt{sra}. \\
+\texttt{mult.asm}, \texttt{div.asm} & Produto, quociente, resto, HI/LO e divisão por zero. \\
+\texttt{push\_pop.asm} & Um \texttt{push} seguido de um \texttt{pop}; complementar com LIFO e \texttt{push R29}. \\
+\texttt{excecoes.asm} & Cenários de divisão, overflow e opcode não reconhecido; validar a montagem do último estímulo. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+Os programas não substituem a exigência de uma captura e de uma análise para cada uma das 23 instruções. Também faltam, como estímulos explícitos, os casos de byte em todas as posições, palavra no endereço 223, pilha com duas entradas, limites de deslocamento e temporização de cada exceção. Esses cenários devem ser acrescentados pela equipe durante a validação.
+
+\subsection{Convenção de preenchimento}\label{subsec:convencao-simulacao}
+
+Para cada instrução: (1) registrar valores iniciais e programa de teste; (2) definir sinais visíveis e a escala temporal; (3) inserir uma captura legível; (4) percorrer os estados na ordem real, indicando o valor antes e depois de cada borda; (5) comparar valores medidos com os esperados; (6) declarar aprovação ou falha com causa conhecida. Os nomes das capturas podem ser inseridos diretamente no campo de figura de cada subseção ou associados a novos arquivos na pasta \texttt{figuras/}. Não usar o mapa de estados como substituto de uma forma de onda.
+
+\subsection{Casos prioritários da pilha}\label{subsec:prioridade-pilha}
+
+\begin{table}[H]\centering\small
+\caption{Testes mínimos sugeridos para a extensão da pilha.}\label{tab:casos-pilha}
+\begin{tabularx}{\linewidth}{@{}p{3.1cm}X X@{}}\toprule
+Caso & Preparação & Resultado esperado \\\midrule
+Inicialização & Liberar reset e entrar em INIT\_SP. & R29=227 antes da primeira busca. \\
+\texttt{push R8} & R29=227; R8=\texttt{0xAABBCCDD}. & R29=223; $M_{32}[223]$ recebe a palavra. \\
+\texttt{pop R9} & R29=223; $M_{32}[223]$ contém a palavra. & R9 recebe a palavra; R29=227. \\
+LIFO & Dois \texttt{push}, seguidos de dois \texttt{pop}. & SP: 227, 223, 219, 223, 227; ordem invertida dos dados. \\
+\texttt{push R29} & R29=227. & Memória em 223 recebe 227, não 223. \\
+Leitura síncrona & Observar REQ, WAIT e CAP. & Endereço estável; MDRWrite apenas em CAP. \\
+\emph{Little-endian} & Escrever \texttt{0x12345678} em 223. & Bytes 223--226: \texttt{78 56 34 12}. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Instruções do formato R}\label{subsec:sims-r}
+\SimulacaoInstrucao{add}{add}{Verificar soma com sinal, escrita em rd e tratamento de overflow.}{rd recebe a soma válida; em overflow, a exceção segue a política da UC.}
+\SimulacaoInstrucao{and}{and}{Verificar a operação lógica bit a bit.}{rd recebe a conjunção dos 32 pares de bits.}
+\SimulacaoInstrucao{div}{div}{Verificar quociente, resto, conclusão e divisão por zero.}{LO recebe quociente, HI recebe resto; divisor zero sinaliza exceção.}
+\SimulacaoInstrucao{mult}{mult}{Verificar Booth com sinal, produto de 64 bits e latência.}{HI/LO formam o produto; conclusão ocorre dentro do limite da especificação.}
+\SimulacaoInstrucao{jr}{jr}{Verificar salto por registrador.}{PC recebe o conteúdo de R[rs].}
+\SimulacaoInstrucao{mfhi}{mfhi}{Verificar leitura de HI sem alterá-lo.}{rd recebe o valor armazenado em HI.}
+\SimulacaoInstrucao{mflo}{mflo}{Verificar leitura de LO sem alterá-lo.}{rd recebe o valor armazenado em LO.}
+\SimulacaoInstrucao{sll}{sll}{Verificar deslocamento lógico, inclusive quantidades 0 e 31.}{rd recebe R[rt] deslocado à esquerda, com zeros inseridos.}
+\SimulacaoInstrucao{slt}{slt}{Verificar comparação com sinal e extremos.}{rd recebe exatamente 0 ou 1.}
+\SimulacaoInstrucao{sra}{sra}{Verificar deslocamento aritmético e preservação do sinal.}{rd recebe R[rt] deslocado à direita com replicação do bit de sinal.}
+\SimulacaoInstrucao{sub}{sub}{Verificar subtração com sinal e overflow.}{rd recebe a diferença válida; overflow desvia ao tratamento.}
+\SimulacaoInstrucao{push}{push}{Verificar captura de R[rs] antigo, decremento de SP e escrita da palavra.}{SP diminui quatro; a memória recebe o valor preservado em B.}
+\SimulacaoInstrucao{pop}{pop}{Verificar leitura síncrona, escrita de rd e incremento posterior de SP.}{rd recebe a palavra do topo antigo; R29 aumenta quatro.}
+
+\subsection{Instruções do formato I}\label{subsec:sims-i}
+\SimulacaoInstrucao{addi}{addi}{Verificar extensão de sinal do imediato e soma.}{rt recebe a soma válida; overflow é tratado.}
+\SimulacaoInstrucao{beq}{beq}{Verificar condições verdadeira/falsa e offset positivo/negativo.}{PC recebe o alvo relativo a P+4 somente quando R[rs]=R[rt].}
+\SimulacaoInstrucao{bne}{bne}{Verificar a inversão da condição de igualdade.}{PC recebe o alvo somente quando R[rs] difere de R[rt].}
+\SimulacaoInstrucao{lb}{lb}{Verificar as quatro posições do byte e extensão de sinal.}{rt recebe o byte endereçado estendido para 32 bits.}
+\SimulacaoInstrucao{lui}{lui}{Verificar seleção do imediato e deslocamento de 16 posições.}{rt recebe imediato nos 16 bits altos e zeros nos baixos.}
+\SimulacaoInstrucao{lw}{lw}{Verificar endereço efetivo, latência da memória e MDR.}{rt recebe a palavra lida após a captura válida.}
+\SimulacaoInstrucao{sb}{sb}{Verificar escrita de byte sem perda dos vizinhos.}{Apenas o byte endereçado muda na palavra da memória.}
+\SimulacaoInstrucao{sw}{sw}{Verificar que o dado gravado vem de R[rt] via B.}{A palavra em EA recebe o valor de R[rt].}
+
+\subsection{Instruções do formato J}\label{subsec:sims-j}
+\SimulacaoInstrucao{j}{j}{Verificar formação do alvo e atualização do PC.}{PC recebe o destino formado pelos bits altos e target deslocado.}
+\SimulacaoInstrucao{jal}{jal}{Verificar alvo e endereço de retorno após definir a convenção.}{PC recebe o alvo; R31 recebe o link acordado para esta CPU.}
+
+\subsection{Simulações isoladas das entidades implementadas}\label{subsec:sims-entidades}
+
+A especificação dispensa simulação isolada dos componentes fornecidos e dos multiplexadores, mas exige imagem e explicação para cada unidade construída pela equipe. Para cada entidade implementada, duplicar o modelo abaixo e preencher nome, portas, estímulos, resultado esperado, resultado observado e figura.
+
+\subsubsection{Unidade de controle}\label{sim-ent:uc}
+\noindent\textbf{Entradas e saídas:} \textit{Preencher de acordo com o HDL.}\par
+\noindent\textbf{Cenários:} decodificação das 23 instruções, transições de retorno à busca, reset, exceções e estados da pilha.\par
+\noindent\textbf{Forma de onda e análise:} \textit{Inserir captura e explicar cada transição relevante.}\par
+
+\subsubsection{Multiplicador}\label{sim-ent:mult}
+\noindent\textbf{Portas e algoritmo:} \textit{Preencher conforme a unidade implementada.}\par
+\noindent\textbf{Cenários:} sinais dos operandos, produto de 64 bits, início, conclusão, 32--40 ciclos e reset interno.\par
+\noindent\textbf{Forma de onda e análise:} \textit{Inserir captura e conferir HI/LO.}\par
+
+\subsubsection{Divisor}\label{sim-ent:div}
+\noindent\textbf{Portas e algoritmo:} \textit{Preencher conforme a unidade implementada.}\par
+\noindent\textbf{Cenários:} quociente, resto, sinais, divisor zero, conclusão e reset interno.\par
+\noindent\textbf{Forma de onda e análise:} \textit{Inserir captura e conferir HI/LO.}\par
+
+\subsubsection{Outras entidades próprias}\label{sim-ent:outras}
+\noindent\textbf{Entidades a incluir:} \textit{Listar apenas as efetivamente implementadas pela equipe, por exemplo MergeBytes, comparador ou lógica adicional de exceções. Criar uma subsubseção e figura para cada uma.}\par

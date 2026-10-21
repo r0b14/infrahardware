@@ -1,0 +1,88 @@
+\section{Descrição dos estados do controle}\label{sec:controle}
+
+\subsection{Como ler o mapa de estados}\label{subsec:leitura-mapa}
+
+Cada estado representa uma etapa temporal da UC. Dentro de um estado, seletores e unidades combinacionais podem atuar simultaneamente; na borda, apenas os elementos habilitados capturam valores. As setas representam a sequência entre ciclos. Para explicar uma caixa do mapa, deve-se indicar: valores disponíveis no início, sinais ativados, cálculo durante o ciclo, efeito na borda e próximo estado. Essa regra, desenvolvida no guia da parte 2~\cite{docpt2}, impede confundir ações simultâneas com estados sucessivos.
+
+O mapa completo da Figura~\ref{fig:mapa-figma} aparece ao fim desta seção em página paisagem; a Figura~\ref{fig:mapa-recorte} amplia a sequência dos estados. A legenda da Figura~\ref{fig:legenda-mapa} reúne os agrupamentos de sinais. O esquema resumido da Figura~\ref{fig:fluxo-estados} serve à navegação. O nome e a codificação binária dos estados desenhados devem ser conciliados com a UC implementada; aqui são usados nomes funcionais para não atribuir ao HDL estados ainda não conferidos.
+
+\begin{figure}[H]\centering
+\begin{tikzpicture}[>=Latex,node distance=6mm and 8mm,
+  st/.style={draw,rounded corners,align=center,minimum height=8mm,text width=18mm,font=\scriptsize},
+  stack/.style={draw,rounded corners,align=center,minimum height=8mm,text width=31mm,font=\scriptsize,fill=gray!10}]
+\node[st] (init) {INIT\_SP};
+\node[st,right=of init] (busca) {BUSCA};
+\node[st,right=of busca] (dec) {DECODE};
+\node[stack,above right=7mm and 13mm of dec] (familias) {ALU, SHIFT, memória,\\ desvios, HI/LO};
+\node[stack,right=13mm of dec] (push) {PUSH\_DEC $\to$ PUSH\_SP\\ $\to$ PUSH\_STORE};
+\node[stack,below right=7mm and 13mm of dec] (pop) {POP\_ADDR $\to$ REQ $\to$ WAIT\\ $\to$ CAP $\to$ RD $\to$ INC $\to$ SP};
+\draw[->] (init) -- (busca);
+\draw[->] (busca) -- (dec);
+\draw[->] (dec) -- (familias);
+\draw[->] (dec) -- (push);
+\draw[->] (dec) -- (pop);
+\node[font=\scriptsize,below=21mm of dec] {Cada ramo retorna à BUSCA ao terminar.};
+\end{tikzpicture}
+\caption{Resumo lógico da transição entre busca, decodificação e famílias de execução.}\label{fig:fluxo-estados}
+\end{figure}
+
+\FiguraFigma{legenda-mapa-estados.png}{Legenda de grupos e sinais de controle usada no mapa de estados da equipe.}{fig:legenda-mapa}{0.86}
+
+\subsection{Estados compartilhados}\label{subsec:estados-comuns}
+
+BUSCA apresenta PC à memória, aguarda a saída síncrona quando necessário, registra IR e calcula o PC sequencial. DECODE examina \texttt{opcode} e, para instruções R, \texttt{funct}; captura operandos e escolhe a família. Estados de execução da ALU registram resultados em ALUOut e os estados de escrita escolhem destino e dado. As cargas calculam EA pela Equação~\ref{eq:endereco-efetivo}, aguardam a leitura em MDR e escrevem no banco. Os armazenamentos apresentam EA e o dado adequado à memória. Os desvios atualizam PC somente quando sua condição se confirma; saltos escolhem o alvo formado ou R[rs]. Todos retornam à busca ao terminar.
+
+INIT\_SP é a proposta de escrita de 227 em R29 depois da liberação do reset e antes da primeira busca. Essa solução ainda deve ser confrontada com o requisito de R29=227 enquanto o reset está ativo, conforme o Apêndice~\ref{ap:pendencias}. Na captura de \texttt{push}, A recebe o SP antigo e B o dado antigo de R[rs]; na de \texttt{pop}, A recebe o SP antigo. Os seletores precisam estar estáveis antes da borda que grava A/B. Se a classificação da instrução só terminar nessa borda, acrescentar um estado específico de captura.
+
+\subsection{Sequência de \texttt{push} e \texttt{pop}}\label{sec:estados-pilha}
+
+\begin{table}[H]\centering\footnotesize
+\caption{Estados de \texttt{push} após a captura dos operandos.}\label{tab:push-estados}
+\begin{tabularx}{\linewidth}{@{}p{2.5cm}p{4cm}X@{}}\toprule
+Estado & Efeito na borda & Controles essenciais \\\midrule
+PUSH\_DEC & $\mathrm{ALUOut}\gets A-4$ & ALUSrcA=A, ALUSrcB=4, F=010, ALUOutWrite=1. \\
+PUSH\_SP & $R29\gets\mathrm{ALUOut}$ & RegDst=3, MemtoReg=0, RegWrite=1. \\
+PUSH\_STORE & $M_{32}[\mathrm{ALUOut}]\gets B$ & IorD=1, DataSource=2, wr=1. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+A e B não são reescritos após a captura. Assim, \texttt{push R29} armazena o valor antigo do SP, preservado em B, apesar de R29 ter sido atualizado antes da escrita da memória. Durante esses estados, PCWrite, PCWriteCond e IRWrite permanecem desabilitados.
+
+\begin{table}[H]\centering\small
+\caption{Estados de \texttt{pop} após a captura de SP.}\label{tab:pop-estados}
+\begin{tabularx}{\linewidth}{@{}p{2.5cm}p{4cm}X@{}}\toprule
+Estado & Efeito na borda & Controles essenciais \\\midrule
+POP\_ADDR & $\mathrm{ALUOut}\gets A$ & ALUSrcA=A, F=000, ALUOutWrite=1. \\
+POP\_REQ & Requisitar leitura & IorD=1, wr=0, MDRWrite=0. \\
+POP\_WAIT & Aguardar dado válido & Endereço estável, MDRWrite=0. \\
+POP\_CAP & $\mathrm{MDR}\gets\mathrm{DataOut}$ & IorD=1, wr=0, MDRWrite=1. \\
+POP\_RD & $R[rd]\gets\mathrm{MDR}$ & RegDst=1, MemtoReg=1, RegWrite=1. \\
+POP\_INC & $\mathrm{ALUOut}\gets A+4$ & ALUSrcA=A, ALUSrcB=4, F=001, ALUOutWrite=1. \\
+POP\_SP & $R29\gets\mathrm{ALUOut}$ & RegDst=3, MemtoReg=0, RegWrite=1. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+REQ, WAIT e CAP mantêm o mesmo endereço e representam uma leitura conservadora da memória síncrona. O \texttt{Memoria.vhd} registra o controle de rotação em dois estágios; a forma de onda da integração deve mostrar em qual borda a palavra desejada fica válida em \texttt{Dataout} e quantos estados são necessários antes de MDRWrite. A conserva SP antigo até POP\_INC. POP\_RD e POP\_SP usam bordas diferentes porque o banco dispõe de uma única porta de escrita.
+
+\subsection{Exemplo de execução e bytes}\label{subsec:exemplo-pilha}
+
+Considere R29=227 e R8=\texttt{0xAABBCCDD}. Em \texttt{push R8}, A conserva 227, B conserva a palavra de R8, a ALU produz 223, R29 recebe 223 e a memória recebe \texttt{0xAABBCCDD} em $M_{32}[223]$. Em \texttt{pop R9}, a memória lê a partir de 223, MDR conserva a palavra, R9 a recebe e R29 volta a 227. A memória não precisa ser apagada: o avanço de SP remove o elemento logicamente da pilha.
+
+\begin{table}[H]\centering
+\caption{Evolução esperada no exemplo da especificação.}\label{tab:exemplo-pilha}
+\begin{tabular}{@{}lccc@{}}\toprule
+Momento & R29 & R8 & R9 \\\midrule
+Antes de \texttt{push R8} & 227 & \texttt{0xAABBCCDD} & --- \\
+Após \texttt{push R8} & 223 & \texttt{0xAABBCCDD} & --- \\
+Após \texttt{pop R9} & 227 & \texttt{0xAABBCCDD} & \texttt{0xAABBCCDD} \\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Exceções e retorno}\label{subsec:excecoes}
+
+Em opcode inexistente, overflow ou divisão por zero, a UC salva em EPC o endereço $P$ da instrução causadora. Depois lê o byte localizado em 253, 254 ou 255, estende esse byte com zeros para 32 bits e carrega o resultado em PC. Os números 253--255 são endereços que armazenam o vetor, não o destino direto do PC. A especificação menciona \texttt{rte} como retorno $PC\gets EPC$, mas não a codifica entre as 23 instruções; uma eventual implementação de \texttt{rte} deve ser decidida separadamente, sem alterar indevidamente o catálogo~\cite{especificacao}.
+
+\begin{landscape}
+\FiguraFigma{mapa-estados-completo.png}{Visão geral do mapa de estados e do contexto de controle exportados do FigJam.}{fig:mapa-figma}{0.98}
+\FiguraFigma{mapa-estados-recorte.png}{Recorte ampliado do mapa de estados e das transições da UC.}{fig:mapa-recorte}{0.98}
+\end{landscape}

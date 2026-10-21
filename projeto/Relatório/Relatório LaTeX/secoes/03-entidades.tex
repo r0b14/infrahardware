@@ -1,0 +1,44 @@
+\section{Descrição das entidades}\label{sec:entidades}
+
+Esta seção especifica a função e as interfaces relevantes dos blocos. A descrição final de cada entidade construída pela equipe deverá refletir as portas e o algoritmo do HDL efetivamente entregue, como exige a Seção 3.2.5 da especificação~\cite{especificacao}. Componentes fornecidos pela disciplina são descritos aqui para explicar sua integração; sua simulação isolada não é exigida pelo capítulo do relatório.
+
+\subsection{Componentes recebidos na parte 3}\label{subsec:componentes-pt3}
+
+A pasta \texttt{Componentes do Projeto - 2026.2} reúne os seis módulos da Tabela~\ref{tab:modulos-pt3}. O arquivo \texttt{LEIA-ME.txt} orienta incluí-los no projeto sem alterar seu código e posicionar \texttt{instrucoes.mif} junto ao arquivo \texttt{.mpf}; o conteúdo do MIF pode ser atualizado para os programas e dados dos ensaios~\cite{docpt3}. Esses arquivos são componentes de base, e não constituem por si uma CPU integrada.
+
+\begin{table}[H]\centering\small
+\caption{Módulos VHDL e arquivo de memória fornecidos na parte 3.}\label{tab:modulos-pt3}
+\begin{tabularx}{\linewidth}{@{}p{3.4cm}X X@{}}\toprule
+Arquivo & Função observada no código & Ponto de integração \\\midrule
+\texttt{Banco\_reg.vhd} & 32 registradores; duas leituras combinacionais e escrita síncrona. & Reset assíncrono zera também R29; conferir seleção e escrita de SP. \\
+\texttt{ula32.vhd} & ALU combinacional de 32 bits com seletor de três bits. & Compatibilizar operação, flags e código da UC. \\
+\texttt{RegDesloc.vhd} & Registro, deslocamentos lógicos e aritmético e rotações. & Carga e deslocamento usam bordas distintas. \\
+\texttt{Registrador.vhd} & Registrador de 32 bits com habilitação de carga. & Usar para retenção temporal dos valores necessários. \\
+\texttt{Instr\_Reg.vhd} & Registra instrução e expõe campos para decodificação. & Conferir extração posterior de \texttt{rd} e \texttt{funct}. \\
+\texttt{Memoria.vhd} & Memória em quatro bancos de bytes, com leitura em clock. & Verificar ordem dos bytes, rotação e latência dos dados. \\
+\texttt{instrucoes.mif} & Inicialização de 256 endereços de oito bits. & Carregar programa e dados correspondentes a cada ensaio. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Registradores e banco}\label{subsec:registradores}
+
+PC, IR, A/B, ALUOut, MDR e EPC conservam, respectivamente, o endereço de busca, a instrução, os operandos, o resultado intermediário, o dado lido e o endereço da instrução que causou exceção. As habilitações de escrita permitem reutilizar os mesmos blocos em ciclos diferentes.
+
+O banco possui 32 registradores de 32 bits, duas leituras combinacionais e uma escrita na borda de subida. O reset assíncrono de \texttt{Banco\_reg.vhd} zera também R29, o que exige conciliação com o SP inicial de 227 (Apêndice~\ref{ap:pendencias}). R31 recebe o retorno de \texttt{jal} conforme a convenção final adotada.
+
+\subsection{ALU, deslocador e unidades especiais}\label{subsec:alu}
+
+A ALU combinacional executa passagem de A (000), soma (001), subtração (010), AND (011), incremento (100), NOT (101) e XOR (110), além de fornecer flags de condição. A UC deve escolher o código em cada estado; \texttt{pop}, por exemplo, usa operações distintas para obter o endereço e incrementar SP. Em \texttt{RegDesloc.vhd}, carga (001), deslocamento à esquerda (010) e deslocamento aritmético à direita (100) ocorrem em bordas distintas, fato a considerar em \texttt{sll}, \texttt{sra} e \texttt{lui}.
+
+As unidades MULT e DIV ainda dependem da implementação integrada. MULT deve produzir o produto de 64 bits por Booth com sinal; DIV deve produzir quociente e resto e sinalizar divisão por zero. HI/LO guardam os resultados, e a UC deve aguardar a conclusão antes de liberar sua leitura.
+
+\subsection{Memória e tratamento de bytes}\label{subsec:memoria}
+
+\texttt{Memoria.vhd} usa os oito bits menos significativos de \texttt{Address} para acessar 256 bytes em quatro bancos. A rotação dos bytes e seus registros de atraso exigem conferir em forma de onda a borda correta de captura em IR e MDR, inclusive para endereços desalinhados~\cite{docpt3}.
+
+\texttt{lb} seleciona e estende com sinal o byte endereçado. \texttt{sb} requer leitura, mescla e reescrita para preservar os outros três bytes, pois a memória não possui \emph{byte enable}; esse caminho ainda precisa ser demonstrado no HDL e nas formas de onda.
+
+\subsection{Unidade de controle e seletores}\label{subsec:uc-entidade}
+
+A UC combina os campos de IR com flags, exceções e sinais de conclusão para escolher o próximo estado. Seus seletores definem as fontes do caminho de dados; suas habilitações controlam as escritas. O diagrama final deve identificar os sinais ativos em cada estado e as opções de cada multiplexador.
+

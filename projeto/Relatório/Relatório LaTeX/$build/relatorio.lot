@@ -1,0 +1,12 @@
+\babel@toc {brazilian}{}\relax 
+\contentsline {table}{\numberline {1}{\ignorespaces Famílias de instruções organizadas pelo caminho predominante.}}{5}{table.1}%
+\contentsline {table}{\numberline {2}{\ignorespaces Seleções essenciais da extensão da pilha.}}{5}{table.2}%
+\contentsline {table}{\numberline {3}{\ignorespaces Módulos VHDL e arquivo de memória fornecidos na parte 3.}}{6}{table.3}%
+\contentsline {table}{\numberline {4}{\ignorespaces Entidades e verificações de integração prioritárias.}}{8}{table.4}%
+\contentsline {table}{\numberline {5}{\ignorespaces Estados de \texttt {push} após a captura dos operandos.}}{9}{table.5}%
+\contentsline {table}{\numberline {6}{\ignorespaces Estados de \texttt {pop} após a captura de SP.}}{10}{table.6}%
+\contentsline {table}{\numberline {7}{\ignorespaces Evolução esperada no exemplo da especificação.}}{10}{table.7}%
+\contentsline {table}{\numberline {8}{\ignorespaces Programas Assembly fornecidos e finalidade principal.}}{12}{table.8}%
+\contentsline {table}{\numberline {9}{\ignorespaces Testes mínimos sugeridos para a extensão da pilha.}}{13}{table.9}%
+\contentsline {table}{\numberline {10}{Instruções exigidas e efeito arquitetural principal.}}{24}{table.10}%
+\contentsline {table}{\numberline {11}{Pendências de integração e validação.}}{25}{table.11}%

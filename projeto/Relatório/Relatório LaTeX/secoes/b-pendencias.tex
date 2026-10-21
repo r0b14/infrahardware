@@ -1,0 +1,24 @@
+\section{Decisões a confirmar antes da entrega}\label{ap:pendencias}
+
+Os itens abaixo separam requisitos explícitos, convenções provisórias e verificações que só podem ser encerradas com o HDL ou com orientação da disciplina. Sua presença evita que o relatório atribua certeza a comportamentos ainda não demonstrados.
+
+\begin{longtable}{@{}p{1.1cm}p{3.1cm}p{10.3cm}@{}}
+\caption{Pendências de integração e validação.}\label{tab:pendencias}\\
+\toprule ID & Tema & Conferência necessária \\\midrule
+\endfirsthead
+\toprule ID & Tema & Conferência necessária \\\midrule
+\endhead
+\bottomrule
+\endfoot
+D01 & \texttt{jal} & Confirmar link e existência de \emph{delay slot}. A documentação assume provisoriamente $P+4$, sem \emph{delay slot}. \\
+D02 & Reset de R29 & Conciliar exigência de SP=227 durante reset com o banco fornecido, cujo reset assíncrono limpa os registradores. INIT\_SP só escreve após a liberação. \\
+D03 & Endereço 223 & A rotação dos bancos de \texttt{Memoria.vhd} prevê endereço desalinhado; demonstrar em simulação que a palavra em 223 usa exatamente os bytes 223--226. \\
+D04 & \texttt{pop R29} & Definir a prioridade entre a escrita do dado lido em rd=29 e a atualização final de SP. A sequência proposta faz o incremento prevalecer. \\
+D05 & Divisão extrema & Definir comportamento de \texttt{0x80000000}/$-1$, cujo quociente não cabe em 32 bits com sinal. \\
+D06 & \texttt{rte} & A especificação menciona retorno via EPC, mas não fornece sua codificação entre as 23 instruções. \\
+D07 & \texttt{lb}/\texttt{slt} & Confirmar extensão de sinal de byte e formação de 0/1 em 32 bits para comparação com sinal. \\
+D08 & Latência de memória & Confrontar REQ/WAIT/CAP com a temporização real da memória e de MDR antes de otimizar estados. \\
+D09 & Outras instruções & Conferir origem B de \texttt{sw}, condição invertida de \texttt{bne}, bytes de \texttt{sb}, alvo de saltos, conclusão de MULT/DIV e vetores de exceção. \\
+D10 & Integração da parte 3 & Integrar os módulos fornecidos sem modificar seu código, completar CPU, UC, MULT/DIV e lógica de bytes; conferir portas e sinais reais. \\
+D11 & Programas de teste & Gerar o MIF dos programas Assembly e complementar os estímulos para cobrir as 23 instruções, LIFO, endereço 223 e exceções. \\
+\end{longtable}

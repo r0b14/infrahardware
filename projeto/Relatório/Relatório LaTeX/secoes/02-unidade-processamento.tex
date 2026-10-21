@@ -1,0 +1,103 @@
+\section{Unidade de processamento}\label{sec:processamento}
+
+\subsection{Visão geral do caminho de dados}\label{subsec:datapath}
+
+O caminho de dados reúne três funções: buscar a instrução e atualizar PC; ler operandos e executar a operação; acessar a memória e escrever o resultado. A memória é compartilhada entre busca e dados. IorD escolhe PC durante a busca e ALUOut durante cargas, armazenamentos e operações de pilha. IR conserva a instrução; A e B conservam as leituras do banco; ALUOut retém endereço efetivo ou resultado; MDR retém a saída de leitura da memória.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[>=Latex, node distance=4mm,
+  bloco/.style={draw,rounded corners,align=center,minimum height=10mm,text width=18mm,font=\footnotesize,inner sep=2pt},
+  controle/.style={draw,rounded corners,align=center,minimum height=8mm,text width=65mm,font=\footnotesize,fill=gray!10}]
+  \node[bloco] (pc) {PC};
+  \node[bloco,right=of pc] (iord) {IorD};
+  \node[bloco,right=of iord] (mem) {memória};
+  \node[bloco,right=of mem] (ir) {IR};
+  \node[bloco,right=of ir] (banco) {banco};
+  \node[bloco,right=of banco] (ab) {A e B};
+  \node[bloco,right=of ab] (alu) {ALU};
+  \node[bloco,right=of alu] (aluout) {ALUOut};
+  \node[controle,above=10mm of ir] (uc) {UC: seletores, habilitações e próximo estado};
+  \foreach \a/\b in {pc/iord,iord/mem,mem/ir,ir/banco,banco/ab,ab/alu,alu/aluout}{\draw[->] (\a) -- (\b);}
+  \draw[->,dashed] (uc.south) -- (ir.north);
+
+  \node[bloco,below=16mm of iord] (endereco) {ALUOut};
+  \node[bloco,right=of endereco] (iorddados) {IorD};
+  \node[bloco,right=of iorddados] (memdados) {memória};
+  \node[bloco,right=of memdados] (mdr) {MDR};
+  \node[bloco,right=of mdr] (wb) {MemtoReg};
+  \node[bloco,right=of wb] (bancodados) {banco};
+  \foreach \a/\b in {endereco/iorddados,iorddados/memdados,memdados/mdr,mdr/wb,wb/bancodados}{\draw[->] (\a) -- (\b);}
+  \node[font=\scriptsize,below=1mm of pc] {busca};
+  \node[font=\scriptsize,below=1mm of endereco] {dados};
+\end{tikzpicture}
+\caption{Fluxos funcionais da CPU multiciclo. Cada linha resume uma sequência de estados; a UC configura os caminhos a cada ciclo.}\label{fig:fluxo-geral}
+\end{figure}
+
+A Figura~\ref{fig:fluxo-geral} serve para leitura conceitual. O desenho completo da equipe, com seletores e sinais da UC, aparece na Figura~\ref{fig:circuito-figma}. O recorte seguinte amplia as conexões centrais do caminho de dados.
+
+\FiguraFigma{circuito-completo.png}{Circuito completo do processador multiciclo exportado do FigJam.}{fig:circuito-figma}{0.98}
+
+O recorte da Figura~\ref{fig:circuito-detalhe} amplia a região de busca, leitura de operandos, ALU e seleção de escrita. Ele complementa a visão integral da Figura~\ref{fig:circuito-figma}, sem substituir as demais ligações do quadro.
+
+\FiguraFigma{circuito-detalhe-busca-alu.png}{Detalhe do circuito: memória, IR, banco, ALU, EPC e seletores próximos.}{fig:circuito-detalhe}{0.95}
+
+\subsection{Formatos, busca e acesso à memória}\label{subsec:busca}
+
+Os formatos R, I e J contêm, respectivamente, os campos \texttt{opcode|rs|rt|rd|shamt|funct},\linebreak \texttt{opcode|rs|rt|imediato} e \texttt{opcode|target}. A busca apresenta o endereço inicial $P$ à memória e conserva a instrução em IR quando a saída estiver válida. Em paralelo ao caminho de leitura, a ALU produz $P+4$ para o fluxo sequencial. O acesso posterior a dados usa o endereço guardado em ALUOut, sem confundir esse ciclo com a busca.
+
+Para \texttt{lw}, \texttt{lb}, \texttt{sw} e \texttt{sb}, o endereço efetivo é
+\begin{equation}\label{eq:endereco-efetivo}
+  EA = R[rs] + \operatorname{SE}_{16}(\textit{offset}).
+\end{equation}
+Como a leitura da memória só fica disponível após a requisição, a UC deve manter endereço e IorD estáveis até o dado poder ser capturado em IR ou MDR. A escrita ocupa um ciclo. O módulo \texttt{Memoria.vhd} fornecido usa quatro bancos de oito bits e somente \texttt{Address(7 downto 0)} para os 256 bytes; a seleção e a rotação dos bancos acomodam os deslocamentos do endereço. Na ordem \emph{little-endian}, a palavra \texttt{0xAABBCCDD} iniciada no endereço decimal 223 corresponde aos bytes \texttt{DD}, \texttt{CC}, \texttt{BB} e \texttt{AA} nos endereços 223 a 226. Assim, a estrutura do componente contempla endereço de palavra desalinhado, embora o resultado e a latência precisem ser confirmados em simulação~\cite{especificacao,docpt3}.
+
+\subsection{Grupos de reaproveitamento}\label{subsec:grupos}
+
+\begin{table}[H]\centering\small
+\caption{Famílias de instruções organizadas pelo caminho predominante.}\label{tab:grupos}
+\begin{tabularx}{\linewidth}{@{}p{1.2cm}p{5.3cm}X@{}}\toprule
+Grupo & Instruções & Caminho principal \\\midrule
+G0 & Todas & PC, memória, IR e decodificação. \\
+G1 & add, and, sub, slt, addi & Banco, ALU/comparador e escrita no banco. \\
+G2 & sll, sra, lui & Fonte, SHIFT e escrita no banco. \\
+G3 & lw, lb & Endereço, memória, MDR e escrita no banco. \\
+G4 & sw, sb & Endereço, dado do banco e escrita na memória. \\
+G5 & beq, bne & Comparação e escolha condicional do PC. \\
+G6 & j, jal, jr & Formação/seleção do alvo e escrita do PC. \\
+G7 & mult, div, mfhi, mflo & Unidades especiais e registradores HI/LO. \\
+G8 & push, pop & R29, ALUOut, memória, MDR e escrita no banco. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+G0 é transversal: não adiciona instruções à contagem. Os grupos G1 a G8 particionam as 23 operações para explicar o reaproveitamento, mas não substituem a decodificação por \texttt{opcode} e \texttt{funct}. Nas aulas de multiciclo, a presença de registradores intermediários permite que o mesmo recurso físico atenda grupos diferentes em ciclos sucessivos~\cite{aulas}.
+
+\subsection{Pilha e extensão da arquitetura}\label{sec:pilha}
+
+O SP é R29. A pilha cresce para endereços menores. O conteúdo original do registrador fonte deve ser conservado antes de atualizar R29:
+\begin{align}
+\text{\texttt{push rs:}}\quad & d \gets R[rs]_{\mathrm{antigo}}, & SP &\gets SP_{\mathrm{antigo}}-4, & M_{32}[SP] &\gets d; \label{eq:push}\\
+\text{\texttt{pop rd:}}\quad & d \gets M_{32}[SP_{\mathrm{antigo}}], & R[rd] &\gets d, & SP &\gets SP_{\mathrm{antigo}}+4. \label{eq:pop}
+\end{align}
+
+Na captura de \texttt{push}, Read1Sel seleciona R29 para A, e Read2Sel seleciona \texttt{rs} para B. Em \texttt{pop}, A recebe R29 e B não é necessário. RegDst ganha a opção R29; MemtoReg ganha a constante 227 para a proposta de inicialização; DataSource usa B como dado de escrita da memória. A largura de MemtoReg deve comportar a entrada de índice 8. Os sinais AWrite e BWrite são desabilitados depois da captura, para preservar o SP e o dado antigos durante toda a operação.
+
+\begin{table}[H]\centering\small
+\caption{Seleções essenciais da extensão da pilha.}\label{tab:sinais-pilha}
+\begin{tabularx}{\linewidth}{@{}p{3cm}p{4.3cm}X@{}}\toprule
+Sinal & Seleção relevante & Finalidade \\\midrule
+Read1Sel & 1 = R29 & Capturar SP antigo em A. \\
+Read2Sel & 1 = rs & Capturar dado de \texttt{push} em B. \\
+RegDst & 1 = rd; 3 = R29 & Escrever destino de \texttt{pop} ou SP. \\
+MemtoReg & 0 = ALUOut; 1 = MDR; 8 = 227 & Escrever endereço calculado, dado lido ou SP inicial. \\
+DataSource & 2 = B & Escrever o dado antigo de \texttt{push}; também corrige a origem de \texttt{sw}. \\
+IorD & 1 = ALUOut & Apresentar endereço de dados à memória. \\
+ALUSrcA / ALUSrcB & A / constante 4 & Calcular $SP-4$ ou $SP+4$. \\\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Demais operações e cuidados de integração}\label{subsec:demais}
+
+\texttt{add}, \texttt{and}, \texttt{sub}, \texttt{slt} e \texttt{addi} compartilham leitura, execução e escrita no banco. \texttt{slt} deve produzir a palavra 0 ou 1, com comparação com sinal. \texttt{sll}, \texttt{sra} e \texttt{lui} compartilham SHIFT, mas variam fonte, quantidade e modo. Em \texttt{RegDesloc.vhd}, carregar a entrada e deslocá-la são comandos síncronos distintos; a UC deve prever ciclos separados ou demonstrar um caminho alternativo que produza o mesmo efeito. \texttt{lb} precisa selecionar um byte e estendê-lo com sinal; \texttt{sb} precisa preservar os três bytes vizinhos porque a memória não tem habilitação individual de byte.
+
+\texttt{beq} e \texttt{bne} usam o alvo $P+4+(\operatorname{SE}_{16}(\textit{offset})\ll 2)$ e condições opostas. \texttt{j} e \texttt{jal} formam o alvo com os quatro bits altos do PC indicado pela especificação e \texttt{target}\,$\ll 2$; \texttt{jr} usa diretamente R[rs]. A documentação da equipe assume provisoriamente link $P+4$ e ausência de \emph{delay slot} em \texttt{jal}; essa convenção exige confirmação. MULT e DIV devem ser unidades separadas da ALU. A multiplicação sinalizada usa Booth, produz 64 bits e aceita conclusão entre 32 e 40 ciclos; HI/LO guardam as metades. Na divisão, HI guarda o resto, LO o quociente e a divisão por zero comunica exceção à UC~\cite{especificacao}.

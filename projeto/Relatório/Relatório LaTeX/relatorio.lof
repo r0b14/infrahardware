@@ -1,0 +1,31 @@
+\babel@toc {brazilian}{}\relax 
+\contentsline {figure}{\numberline {1}{\ignorespaces Fluxos funcionais da CPU multiciclo. Cada linha resume uma sequência de estados; a UC configura os caminhos a cada ciclo.}}{2}{figure.1}%
+\contentsline {figure}{\numberline {2}{\ignorespaces Circuito completo do processador multiciclo exportado do FigJam.}}{3}{figure.2}%
+\contentsline {figure}{\numberline {3}{\ignorespaces Detalhe do circuito: memória, IR, banco, ALU, EPC e seletores próximos.}}{4}{figure.3}%
+\contentsline {figure}{\numberline {4}{\ignorespaces Resumo lógico da transição entre busca, decodificação e famílias de execução.}}{8}{figure.4}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Legenda de grupos e sinais de controle usada no mapa de estados da equipe.}}{8}{figure.5}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Visão geral do mapa de estados e do contexto de controle exportados do FigJam.}}{10}{figure.6}%
+\contentsline {figure}{\numberline {7}{\ignorespaces Recorte ampliado do mapa de estados e das transições da UC.}}{10}{figure.7}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Simulação de add — inserir captura após validação.}}{12}{figure.8}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Simulação de and — inserir captura após validação.}}{13}{figure.9}%
+\contentsline {figure}{\numberline {10}{\ignorespaces Simulação de div — inserir captura após validação.}}{13}{figure.10}%
+\contentsline {figure}{\numberline {11}{\ignorespaces Simulação de mult — inserir captura após validação.}}{13}{figure.11}%
+\contentsline {figure}{\numberline {12}{\ignorespaces Simulação de jr — inserir captura após validação.}}{14}{figure.12}%
+\contentsline {figure}{\numberline {13}{\ignorespaces Simulação de mfhi — inserir captura após validação.}}{14}{figure.13}%
+\contentsline {figure}{\numberline {14}{\ignorespaces Simulação de mflo — inserir captura após validação.}}{15}{figure.14}%
+\contentsline {figure}{\numberline {15}{\ignorespaces Simulação de sll — inserir captura após validação.}}{15}{figure.15}%
+\contentsline {figure}{\numberline {16}{\ignorespaces Simulação de slt — inserir captura após validação.}}{15}{figure.16}%
+\contentsline {figure}{\numberline {17}{\ignorespaces Simulação de sra — inserir captura após validação.}}{16}{figure.17}%
+\contentsline {figure}{\numberline {18}{\ignorespaces Simulação de sub — inserir captura após validação.}}{16}{figure.18}%
+\contentsline {figure}{\numberline {19}{\ignorespaces Simulação de push — inserir captura após validação.}}{17}{figure.19}%
+\contentsline {figure}{\numberline {20}{\ignorespaces Simulação de pop — inserir captura após validação.}}{17}{figure.20}%
+\contentsline {figure}{\numberline {21}{\ignorespaces Simulação de addi — inserir captura após validação.}}{18}{figure.21}%
+\contentsline {figure}{\numberline {22}{\ignorespaces Simulação de beq — inserir captura após validação.}}{18}{figure.22}%
+\contentsline {figure}{\numberline {23}{\ignorespaces Simulação de bne — inserir captura após validação.}}{18}{figure.23}%
+\contentsline {figure}{\numberline {24}{\ignorespaces Simulação de lb — inserir captura após validação.}}{19}{figure.24}%
+\contentsline {figure}{\numberline {25}{\ignorespaces Simulação de lui — inserir captura após validação.}}{19}{figure.25}%
+\contentsline {figure}{\numberline {26}{\ignorespaces Simulação de lw — inserir captura após validação.}}{20}{figure.26}%
+\contentsline {figure}{\numberline {27}{\ignorespaces Simulação de sb — inserir captura após validação.}}{20}{figure.27}%
+\contentsline {figure}{\numberline {28}{\ignorespaces Simulação de sw — inserir captura após validação.}}{20}{figure.28}%
+\contentsline {figure}{\numberline {29}{\ignorespaces Simulação de j — inserir captura após validação.}}{21}{figure.29}%
+\contentsline {figure}{\numberline {30}{\ignorespaces Simulação de jal — inserir captura após validação.}}{21}{figure.30}%
